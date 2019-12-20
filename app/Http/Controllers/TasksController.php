@@ -1,11 +1,7 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
-
 use App\Task;
-
 class TasksController extends Controller
 {
     /**
@@ -16,12 +12,17 @@ class TasksController extends Controller
     public function index()
     {
         $tasks = Task::all();
-        
+    
+        if (\Auth::check()) {
+            $user = \Auth::user();
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
+       
+        }
         return view('tasks.index', [
             'tasks' => $tasks,
             ]);
+        
     }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -35,7 +36,6 @@ class TasksController extends Controller
             'task' => $task
             ]);
     }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -51,11 +51,11 @@ class TasksController extends Controller
         $task = new Task;
         $task->status = $request->status;
         $task->content = $request->content;
+        $task->user_id = \Auth::user()->id;
         $task->save();
         
         return redirect('/');
     }
-
     /**
      * Display the specified resource.
      *
@@ -70,7 +70,6 @@ class TasksController extends Controller
             'task' => $task,
             ]);
     }
-
     /**
      * Show the form for editing the specified resource.
      *
@@ -85,7 +84,6 @@ class TasksController extends Controller
             'task'=>$task,
             ]);
     }
-
     /**
      * Update the specified resource in storage.
      *
@@ -100,13 +98,15 @@ class TasksController extends Controller
             ]);
         
         $task = Task::find($id);
+        
+        if (\Auth::id() === $task->user_id) {
         $task->content = $request->content;
         $task->status = $request->status;
         $task->save();
+        }
         
         return redirect('/');
     }
-
     /**
      * Remove the specified resource from storage.
      *
@@ -116,7 +116,10 @@ class TasksController extends Controller
     public function destroy($id)
     {
         $task = Task::find($id);
+        
+        if (\Auth::id() === $task->user_id) {
         $task->delete();
+    }
         
         return redirect('/');
     }
