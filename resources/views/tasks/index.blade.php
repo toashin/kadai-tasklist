@@ -3,10 +3,11 @@
 
 @section('content')
 
+    <h1>タスク一覧</h1>
+
     @if (Auth::check())
     @if (count($tasks) > 0)
-
-    <h1>タスク一覧</h1>
+    
         <table class="table table-striped">
             <thead>
                 <tr>
